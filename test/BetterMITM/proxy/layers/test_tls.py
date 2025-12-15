@@ -226,7 +226,7 @@ def reply_tls_start_server(
     def make_server_conn(tls_start: TlsData) -> None:
 
 
-        ssl_context = SSL.Context(SSL.SSLv23_METHOD)
+        ssl_context = SSL.Context(SSL.TLS_METHOD)
         ssl_context.set_options(
             SSL.OP_NO_SSLv3 | SSL.OP_NO_TLSv1 | SSL.OP_NO_TLSv1_1 | SSL.OP_NO_TLSv1_2
         )
