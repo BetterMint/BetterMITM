@@ -1,0 +1,62 @@
+import { configureStore, UnknownAction } from "@reduxjs/toolkit";
+import { ThunkAction } from "redux-thunk";
+
+import eventLog from "./eventLog";
+import flows from "./flows";
+import ui from "./ui/index";
+import connection from "./connection";
+import options from "./options";
+import commandBar from "./commandBar";
+
+import backendState from "./backendState";
+import options_meta from "./options_meta";
+import modes from "./modes";
+import processes from "./processes";
+
+export const reducer = {
+    commandBar,
+    eventLog,
+    flows,
+    connection,
+    modes,
+    ui,
+    options,
+    options_meta,
+    backendState,
+    processes,
+};
+
+export const middlewares = {
+    immutableCheck: { warnAfter: 500_000 },
+    serializableCheck: { warnAfter: 500_000, ignoredPaths: ["flows"] },
+};
+
+export const store = configureStore({
+    reducer,
+    middleware: (getDefaultMiddleware) => getDefaultMiddleware(middlewares),
+    devTools:
+        process.env.NODE_ENV !== "production"
+            ? { serialize: { options: { map: true } } }
+            : false,
+});
+
+
+
+const initialState = store.getState();
+if (!initialState || !initialState.options) {
+    console.warn("Redux store not properly initialized - options state missing");
+}
+
+
+export type RootState = ReturnType<typeof store.getState>;
+
+export type AppDispatch = typeof store.dispatch;
+
+export type RootStore = typeof store;
+
+export type AppThunk<ReturnType = void> = ThunkAction<
+    ReturnType,
+    RootState,
+    unknown,
+    UnknownAction
+>;

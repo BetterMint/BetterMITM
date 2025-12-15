@@ -1,0 +1,330 @@
+import os
+import threading
+import typing
+from collections.abc import Callable
+from collections.abc import Iterable
+from enum import Enum
+from functools import cache
+from functools import lru_cache
+from pathlib import Path
+from typing import Any
+from typing import BinaryIO
+
+import certifi
+import OpenSSL
+from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurve
+from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurveOID
+from cryptography.hazmat.primitives.asymmetric.ec import get_curve_for_oid
+from cryptography.x509 import ObjectIdentifier
+from OpenSSL import SSL
+
+from BetterMITM import certs
+
+
+try:
+    from OpenSSL.SSL import OP_LEGACY_SERVER_CONNECT
+except ImportError:
+    OP_LEGACY_SERVER_CONNECT = 0x4
+
+
+
+class Method(Enum):
+    TLS_SERVER_METHOD = SSL.TLS_SERVER_METHOD
+    TLS_CLIENT_METHOD = SSL.TLS_CLIENT_METHOD
+
+    DTLS_SERVER_METHOD = SSL.DTLS_SERVER_METHOD
+    DTLS_CLIENT_METHOD = SSL.DTLS_CLIENT_METHOD
+
+
+try:
+    SSL._lib.TLS_server_method
+except AttributeError as e:
+    raise RuntimeError(
+        "Your installation of the cryptography Python package is outdated."
+    ) from e
+
+
+class Version(Enum):
+    UNBOUNDED = 0
+    SSL3 = SSL.SSL3_VERSION
+    TLS1 = SSL.TLS1_VERSION
+    TLS1_1 = SSL.TLS1_1_VERSION
+    TLS1_2 = SSL.TLS1_2_VERSION
+    TLS1_3 = SSL.TLS1_3_VERSION
+
+
+INSECURE_TLS_MIN_VERSIONS: tuple[Version, ...] = (
+    Version.UNBOUNDED,
+    Version.SSL3,
+    Version.TLS1,
+    Version.TLS1_1,
+)
+
+
+class Verify(Enum):
+    VERIFY_NONE = SSL.VERIFY_NONE
+    VERIFY_PEER = SSL.VERIFY_PEER
+
+
+DEFAULT_MIN_VERSION = Version.TLS1_2
+DEFAULT_MAX_VERSION = Version.UNBOUNDED
+DEFAULT_OPTIONS = SSL.OP_CIPHER_SERVER_PREFERENCE | SSL.OP_NO_COMPRESSION
+
+
+@cache
+def is_supported_version(version: Version):
+    client_ctx = SSL.Context(SSL.TLS_CLIENT_METHOD)
+
+
+    client_ctx.set_cipher_list(b"@SECLEVEL=0:ALL")
+    client_ctx.set_min_proto_version(version.value)
+    client_ctx.set_max_proto_version(version.value)
+    client_conn = SSL.Connection(client_ctx)
+    client_conn.set_connect_state()
+
+    try:
+        client_conn.recv(4096)
+    except SSL.WantReadError:
+        return True
+    except SSL.Error:
+        return False
+
+
+EC_CURVES: dict[str, EllipticCurve] = {}
+for oid in EllipticCurveOID.__dict__.values():
+    if isinstance(oid, ObjectIdentifier):
+        curve = get_curve_for_oid(oid)()
+        EC_CURVES[curve.name] = curve
+
+
+@typing.overload
+def get_curve(name: str) -> EllipticCurve: ...
+
+
+@typing.overload
+def get_curve(name: None) -> None: ...
+
+
+def get_curve(name: str | None) -> EllipticCurve | None:
+    if name is None:
+        return None
+    return EC_CURVES[name]
+
+
+class MasterSecretLogger:
+    def __init__(self, filename: Path):
+        self.filename = filename.expanduser()
+        self.f: BinaryIO | None = None
+        self.lock = threading.Lock()
+
+
+    __name__ = "MasterSecretLogger"
+
+    def __call__(self, connection: SSL.Connection, keymaterial: bytes) -> None:
+        with self.lock:
+            if self.f is None:
+                self.filename.parent.mkdir(parents=True, exist_ok=True)
+                self.f = self.filename.open("ab")
+                self.f.write(b"\n")
+            self.f.write(keymaterial + b"\n")
+            self.f.flush()
+
+    def close(self):
+        with self.lock:
+            if self.f is not None:
+                self.f.close()
+
+
+def make_master_secret_logger(filename: str | None) -> MasterSecretLogger | None:
+    if filename:
+        return MasterSecretLogger(Path(filename))
+    return None
+
+
+log_master_secret = make_master_secret_logger(
+    os.getenv("MITMPROXY_SSLKEYLOGFILE") or os.getenv("SSLKEYLOGFILE")
+)
+
+
+def _create_ssl_context(
+    *,
+    method: Method,
+    min_version: Version,
+    max_version: Version,
+    cipher_list: Iterable[str] | None,
+    ecdh_curve: EllipticCurve | None,
+) -> SSL.Context:
+    context = SSL.Context(method.value)
+
+    ok = SSL._lib.SSL_CTX_set_min_proto_version(context._context, min_version.value)
+    ok += SSL._lib.SSL_CTX_set_max_proto_version(context._context, max_version.value)
+    if ok != 2:
+        raise RuntimeError(
+            f"Error setting TLS versions ({min_version=}, {max_version=}). "
+            "The version you specified may be unavailable in your libssl."
+        )
+
+
+    context.set_options(DEFAULT_OPTIONS)
+
+
+    if ecdh_curve is not None:
+        try:
+            context.set_tmp_ecdh(ecdh_curve)
+        except ValueError as e:
+            raise RuntimeError(f"Elliptic curve specification error: {e}") from e
+
+
+    if cipher_list is not None:
+        try:
+            context.set_cipher_list(b":".join(x.encode() for x in cipher_list))
+        except SSL.Error as e:
+            raise RuntimeError(f"SSL cipher specification error: {e}") from e
+
+
+    if log_master_secret:
+        context.set_keylog_callback(log_master_secret)
+
+    return context
+
+
+@lru_cache(256)
+def create_proxy_server_context(
+    *,
+    method: Method,
+    min_version: Version,
+    max_version: Version,
+    cipher_list: tuple[str, ...] | None,
+    ecdh_curve: EllipticCurve | None,
+    verify: Verify,
+    ca_path: str | None,
+    ca_pemfile: str | None,
+    client_cert: str | None,
+    legacy_server_connect: bool,
+) -> SSL.Context:
+    context: SSL.Context = _create_ssl_context(
+        method=method,
+        min_version=min_version,
+        max_version=max_version,
+        cipher_list=cipher_list,
+        ecdh_curve=ecdh_curve,
+    )
+    context.set_verify(verify.value, None)
+
+    if ca_path is None and ca_pemfile is None:
+        ca_pemfile = certifi.where()
+    try:
+        context.load_verify_locations(ca_pemfile, ca_path)
+    except SSL.Error as e:
+        raise RuntimeError(
+            f"Cannot load trusted certificates ({ca_pemfile=}, {ca_path=})."
+        ) from e
+
+
+    if client_cert:
+        try:
+            context.use_privatekey_file(client_cert)
+            context.use_certificate_chain_file(client_cert)
+        except SSL.Error as e:
+            raise RuntimeError(f"Cannot load TLS client certificate: {e}") from e
+
+
+        SSL._lib.SSL_CTX_set_post_handshake_auth(context._context, 1)
+
+    if legacy_server_connect:
+        context.set_options(OP_LEGACY_SERVER_CONNECT)
+
+    return context
+
+
+@lru_cache(256)
+def create_client_proxy_context(
+    *,
+    method: Method,
+    min_version: Version,
+    max_version: Version,
+    cipher_list: tuple[str, ...] | None,
+    ecdh_curve: EllipticCurve | None,
+    chain_file: Path | None,
+    alpn_select_callback: Callable[[SSL.Connection, list[bytes]], Any] | None,
+    request_client_cert: bool,
+    extra_chain_certs: tuple[certs.Cert, ...],
+    dhparams: certs.DHParams,
+) -> SSL.Context:
+    context: SSL.Context = _create_ssl_context(
+        method=method,
+        min_version=min_version,
+        max_version=max_version,
+        cipher_list=cipher_list,
+        ecdh_curve=ecdh_curve,
+    )
+
+    if chain_file is not None:
+        try:
+            context.load_verify_locations(str(chain_file), None)
+        except SSL.Error as e:
+            raise RuntimeError(f"Cannot load certificate chain ({chain_file}).") from e
+
+    if alpn_select_callback is not None:
+        assert callable(alpn_select_callback)
+        context.set_alpn_select_callback(alpn_select_callback)
+
+    if request_client_cert:
+
+
+
+
+
+
+
+
+        context.set_verify(Verify.VERIFY_PEER.value, accept_all)
+    else:
+        context.set_verify(Verify.VERIFY_NONE.value, None)
+
+    for i in extra_chain_certs:
+        context.add_extra_chain_cert(i.to_cryptography())
+
+    if dhparams:
+        res = SSL._lib.SSL_CTX_set_tmp_dh(context._context, dhparams)
+        SSL._openssl_assert(res == 1)
+
+    return context
+
+
+def accept_all(
+    conn_: SSL.Connection,
+    x509: OpenSSL.crypto.X509,
+    errno: int,
+    err_depth: int,
+    is_cert_verified: int,
+) -> bool:
+
+    return True
+
+
+def starts_like_tls_record(d: bytes) -> bool:
+    """
+    Returns:
+        True, if the passed bytes could be the start of a TLS record
+        False, otherwise.
+    """
+
+
+
+
+    return len(d) > 2 and d[0] == 0x16 and d[1] == 0x03 and 0x00 <= d[2] <= 0x03
+
+
+def starts_like_dtls_record(d: bytes) -> bool:
+    """
+    Returns:
+        True, if the passed bytes could be the start of a DTLS record
+        False, otherwise.
+    """
+
+
+
+
+
+    return len(d) > 2 and d[0] == 0x16 and d[1] == 0xFE and 0xFD <= d[2] <= 0xFE

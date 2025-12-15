@@ -1,0 +1,337 @@
+
+.tools-view {
+    padding: clamp(8px, 1vw, 24px);
+    max-width: 100%;
+    margin: 0 auto;
+    height: auto;
+    min-height: calc(100vh - var(--header-height, 120px) - var(--footer-height, 40px));
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    gap: clamp(12px, 1.5vw, 24px);
+
+    .tools-header {
+        padding: clamp(12px, 1.5vw, 20px);
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        flex-shrink: 0;
+        background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+        border-radius: 12px;
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    .tools-title-section {
+        h2 {
+            font-size: clamp(18px, 2.2vw, 26px);
+            font-weight: 700;
+            margin: 0 0 6px 0;
+            display: flex;
+            align-items: center;
+            gap: clamp(8px, 1vw, 12px);
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: clamp(11px, 1.3vw, 13px);
+        }
+    }
+
+    .tools-main-content {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: clamp(16px, 2vw, 24px);
+        flex: 1;
+        min-height: 0;
+        overflow: visible;
+    }
+
+    .tools-sidebar {
+        padding: clamp(12px, 1.5vw, 20px);
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border-radius: 12px;
+        animation: slideInLeft 0.4s ease-out;
+        min-height: clamp(300px, 40vh, 500px);
+    }
+
+    .tools-sidebar-header {
+        h3 {
+            font-size: clamp(16px, 1.8vw, 20px);
+            font-weight: 600;
+            margin-bottom: clamp(12px, 1.5vw, 20px);
+            display: flex;
+            align-items: center;
+            gap: clamp(6px, 0.8vw, 10px);
+            flex-shrink: 0;
+        }
+    }
+
+    .tools-list {
+        display: flex;
+        flex-direction: column;
+        gap: clamp(8px, 1vw, 12px);
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding-right: 6px;
+    }
+
+    .tools-list::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .tools-list::-webkit-scrollbar-track {
+        background: var(--bg-secondary);
+        border-radius: 2px;
+    }
+
+    .tools-list::-webkit-scrollbar-thumb {
+        background: var(--accent-primary);
+        border-radius: 2px;
+    }
+
+    .tool-item {
+        text-align: left;
+        padding: clamp(10px, 1.2vw, 16px);
+        border-radius: 10px;
+        border: 2px solid var(--border-color);
+        background-color: transparent;
+        transition: all 0.3s ease;
+        animation: fadeIn 0.4s ease-in;
+        animation-fill-mode: both;
+        cursor: pointer;
+        min-height: clamp(60px, 6vh, 80px);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        &:hover {
+            border-color: var(--accent-primary);
+            background-color: var(--bg-tertiary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        &.active {
+            border-color: var(--accent-primary);
+            background-color: var(--bg-secondary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+    }
+
+    .tool-item-title {
+        font-weight: 600;
+        font-size: clamp(13px, 1.4vw, 15px);
+        margin-bottom: 4px;
+        color: var(--text-primary);
+    }
+
+    .tool-item-description {
+        font-size: clamp(11px, 1.2vw, 12px);
+        color: var(--text-secondary);
+        line-height: 1.4;
+    }
+
+    .tools-content-panel {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        min-height: clamp(300px, 40vh, 500px);
+    }
+
+    .tools-empty-state {
+        padding: clamp(20px, 4vw, 40px);
+        text-align: center;
+        color: var(--text-secondary);
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        height: 100%;
+        min-height: clamp(200px, 25vh, 300px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        animation: fadeIn 0.4s ease-in;
+
+        .fa-wrench {
+            font-size: clamp(32px, 6vw, 48px);
+            opacity: 0.3;
+            margin-bottom: clamp(12px, 1.5vw, 24px);
+            color: var(--accent-primary);
+        }
+
+        h3 {
+            font-size: clamp(14px, 1.8vw, 18px);
+            font-weight: 500;
+            margin: 0 0 8px 0;
+        }
+
+        p {
+            font-size: clamp(12px, 1.4vw, 14px);
+            opacity: 0.7;
+            margin: 0;
+        }
+    }
+
+    .tools-content {
+        height: 100%;
+        animation: fadeIn 0.4s ease-in;
+    }
+}
+
+
+@media (min-width: 1200px) {
+    .tools-view {
+        .tools-main-content {
+            grid-template-columns: minmax(320px, 400px) 1fr;
+        }
+
+        .tools-sidebar {
+            min-height: clamp(400px, 50vh, 600px);
+        }
+
+        .tools-content-panel {
+            min-height: clamp(400px, 50vh, 600px);
+        }
+    }
+}
+
+@media (max-width: 1199px) and (min-width: 768px) {
+    .tools-view {
+        .tools-main-content {
+            grid-template-columns: minmax(280px, 350px) 1fr;
+            gap: 20px;
+        }
+
+        .tools-sidebar {
+            min-height: clamp(350px, 45vh, 500px);
+        }
+
+        .tools-content-panel {
+            min-height: clamp(350px, 45vh, 500px);
+        }
+    }
+}
+
+@media (max-width: 767px) {
+    .tools-view {
+        padding: clamp(8px, 1.5vw, 16px);
+        gap: clamp(10px, 1.2vw, 16px);
+
+        .tools-header {
+            padding: clamp(10px, 1.2vw, 16px);
+        }
+
+        .tools-title-section {
+            text-align: center;
+
+            h2 {
+                justify-content: center;
+            }
+        }
+
+        .tools-main-content {
+            grid-template-columns: 1fr;
+            gap: clamp(12px, 1.5vw, 16px);
+        }
+
+        .tools-sidebar {
+            padding: clamp(10px, 1.2vw, 16px);
+            min-height: clamp(250px, 30vh, 350px);
+        }
+
+        .tools-sidebar-header h3 {
+            justify-content: center;
+            text-align: center;
+            font-size: clamp(14px, 1.6vw, 18px);
+        }
+
+        .tools-list {
+            max-height: clamp(200px, 25vh, 300px);
+            gap: clamp(6px, 0.8vw, 10px);
+        }
+
+        .tool-item {
+            padding: clamp(8px, 1vw, 12px);
+            min-height: clamp(50px, 5vh, 70px);
+        }
+
+        .tool-item-title {
+            font-size: clamp(12px, 1.3vw, 14px);
+        }
+
+        .tool-item-description {
+            font-size: clamp(10px, 1.1vw, 11px);
+        }
+
+        .tools-content-panel {
+            min-height: clamp(250px, 30vh, 400px);
+        }
+
+        .tools-empty-state {
+            padding: clamp(16px, 2vw, 32px);
+            min-height: clamp(150px, 20vh, 250px);
+
+            .fa-wrench {
+                font-size: clamp(28px, 5vw, 40px);
+                margin-bottom: clamp(10px, 1.2vw, 16px);
+            }
+
+            h3 {
+                font-size: clamp(13px, 1.6vw, 16px);
+            }
+
+            p {
+                font-size: clamp(11px, 1.3vw, 13px);
+            }
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .tools-view {
+        padding: clamp(6px, 1.2vw, 12px);
+        min-height: calc(100vh - var(--header-height-mobile, 100px) - var(--footer-height, 40px));
+
+        .tools-header {
+            padding: clamp(8px, 1vw, 12px);
+        }
+
+        .tools-sidebar {
+            padding: clamp(8px, 1vw, 12px);
+            min-height: clamp(200px, 25vh, 300px);
+        }
+
+        .tool-item {
+            padding: clamp(8px, 1vw, 10px);
+            min-height: clamp(45px, 4.5vh, 60px);
+        }
+
+        .tools-content-panel {
+            min-height: clamp(200px, 25vh, 350px);
+        }
+
+        .tools-empty-state {
+            padding: clamp(12px, 1.5vw, 24px);
+            min-height: clamp(120px, 15vh, 200px);
+        }
+    }
+}
+
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-30px); }
+    to { opacity: 1; transform: translateX(0); }
+}

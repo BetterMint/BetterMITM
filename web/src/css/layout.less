@@ -1,0 +1,125 @@
+html,
+body,
+#container,
+#mitmproxy {
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+}
+
+#container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    max-height: 100vh;
+
+    outline: none; // our root element is focused by default.
+
+    > header,
+    > footer,
+    > .eventlog {
+        flex: 0 0 auto;
+    }
+}
+
+.main-view {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+
+    // All children of #container need an explicit height
+    // If we don't set this, the scrollbars disappear
+    // (https://github.com/mitmproxy/mitmproxy/issues/615)
+    height: auto;
+    min-height: calc(100vh - var(--header-height, 120px) - var(--footer-height, 40px));
+
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+
+    &.vertical {
+        flex-direction: column;
+    }
+
+    .flow-detail,
+    .flow-table {
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: 100%;
+        overflow: auto;
+    }
+
+    // Responsive design for smaller screens
+    @media (max-width: 1024px) {
+        min-height: calc(100vh - var(--header-height-mobile, 100px) - var(--footer-height, 40px));
+    }
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+        height: auto;
+        min-height: calc(100vh - var(--header-height-mobile, 100px) - var(--footer-height, 40px));
+        overflow: visible;
+
+        .flow-detail {
+            flex: 0 0 auto;
+            max-height: 60vh;
+            min-height: 300px;
+        }
+
+        .flow-table {
+            flex: 1 1 auto;
+            min-height: 200px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .flow-detail {
+            max-height: 50vh;
+            min-height: 250px;
+        }
+
+        .flow-table {
+            min-height: 150px;
+        }
+    }
+}
+
+.splitter {
+    flex: 0 0 4px;
+    background-color: var(--border-color);
+    position: relative;
+    transition: background-color 0.2s;
+
+    &:hover {
+        background-color: var(--accent-primary);
+    }
+
+    > div {
+        position: absolute;
+        //debug: background-color: orange;
+    }
+
+    &.splitter-x {
+        cursor: col-resize;
+        > div {
+            margin-left: -2px;
+            width: 8px;
+            height: 100%;
+        }
+    }
+    &.splitter-y {
+        cursor: row-resize;
+        > div {
+            margin-top: -2px;
+            height: 8px;
+            width: 100%;
+        }
+    }
+
+    // Hide splitter on mobile
+    @media (max-width: 768px) {
+        display: none;
+    }
+}

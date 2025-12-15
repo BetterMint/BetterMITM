@@ -1,0 +1,274 @@
+// Flow View Styles - Enhanced for responsive design and better content handling
+.flowview {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background-color: var(--bg-primary);
+
+    .flowview-header {
+        padding: clamp(8px, 1vw, 16px) clamp(12px, 1.5vw, 20px);
+        background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+        border-bottom: solid var(--border-color) 1px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: clamp(8px, 1vw, 16px);
+
+        .flowview-title {
+            font-size: clamp(14px, 1.6vw, 18px);
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+            flex: 1;
+            min-width: 0;
+
+            span {
+                display: block;
+                font-size: clamp(11px, 1.2vw, 13px);
+                font-weight: 400;
+                color: var(--text-secondary);
+                margin-top: 2px;
+            }
+        }
+
+        .flowview-actions {
+            display: flex;
+            gap: clamp(4px, 0.5vw, 8px);
+            flex-shrink: 0;
+        }
+    }
+
+    .flowview-content {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: clamp(8px, 1vw, 16px);
+
+        // Custom scrollbar
+        scrollbar-width: thin;
+        scrollbar-color: var(--border-color) transparent;
+
+        &::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        &::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+            border-radius: 3px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+            border-radius: 3px;
+        }
+    }
+
+    .flowview-section {
+        margin-bottom: clamp(16px, 2vw, 24px);
+        background-color: var(--bg-secondary);
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        overflow: hidden;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+
+        .flowview-section-header {
+            padding: clamp(10px, 1.2vw, 16px);
+            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+            border-bottom: solid var(--border-color) 1px;
+            font-size: clamp(13px, 1.4vw, 15px);
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: clamp(6px, 0.8vw, 10px);
+            cursor: pointer;
+
+            .fa {
+                font-size: clamp(12px, 1.3vw, 14px);
+                color: var(--accent-primary);
+            }
+
+            .fa-chevron-down,
+            .fa-chevron-right {
+                margin-left: auto;
+                transition: transform 0.2s ease;
+            }
+
+            &.collapsed .fa-chevron-down {
+                transform: rotate(-90deg);
+            }
+        }
+
+        .flowview-section-content {
+            padding: clamp(12px, 1.5vw, 20px);
+            max-height: none;
+            overflow: visible;
+            transition: all 0.3s ease;
+
+            &.collapsed {
+                max-height: 0;
+                padding-top: 0;
+                padding-bottom: 0;
+                overflow: hidden;
+            }
+        }
+    }
+
+    .flowview-request,
+    .flowview-response {
+        .flowview-section-header {
+            background: linear-gradient(135deg,
+                rgba(74, 158, 255, 0.1) 0%,
+                rgba(74, 158, 255, 0.05) 100%
+            );
+        }
+    }
+
+    .flowview-response {
+        .flowview-section-header {
+            background: linear-gradient(135deg,
+                rgba(40, 167, 69, 0.1) 0%,
+                rgba(40, 167, 69, 0.05) 100%
+            );
+        }
+    }
+}
+
+.flowview-image {
+    text-align: center;
+    padding: clamp(8px, 1vw, 16px) 0;
+    margin: clamp(8px, 1vw, 16px) 0;
+
+    img {
+        max-width: 100%;
+        max-height: clamp(200px, 30vh, 400px);
+        object-fit: contain;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+}
+
+.edit-flow-container {
+    position: fixed;
+    right: clamp(12px, 1.5vw, 20px);
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10000;
+}
+
+.edit-flow {
+    cursor: pointer;
+    position: relative;
+    height: clamp(36px, 4vh, 44px);
+    width: clamp(36px, 4vh, 44px);
+    border-radius: 50%;
+    z-index: 10000;
+
+    background-color: rgba(255, 255, 255, 0.9);
+    border: solid 2px rgba(248, 145, 59, 0.7);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+
+    text-align: center;
+    font-size: clamp(18px, 2vw, 22px);
+    line-height: calc(clamp(36px, 4vh, 44px) - 4px);
+    color: var(--accent-primary);
+
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .fa {
+        margin: 0;
+    }
+}
+
+.edit-flow:hover {
+    background-color: var(--accent-primary);
+    color: white;
+    border: solid 2px transparent;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+// Responsive design
+@media (max-width: 768px) {
+    .flowview {
+        .flowview-header {
+            padding: clamp(6px, 0.8vw, 12px);
+            flex-direction: column;
+            align-items: stretch;
+            gap: clamp(6px, 0.8vw, 12px);
+
+            .flowview-title {
+                text-align: center;
+                font-size: clamp(13px, 1.4vw, 16px);
+
+                span {
+                    font-size: clamp(10px, 1.1vw, 12px);
+                }
+            }
+
+            .flowview-actions {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+        }
+
+        .flowview-content {
+            padding: clamp(6px, 0.8vw, 12px);
+        }
+
+        .flowview-section {
+            margin-bottom: clamp(12px, 1.5vw, 16px);
+
+            .flowview-section-header {
+                padding: clamp(8px, 1vw, 12px);
+                font-size: clamp(12px, 1.3vw, 14px);
+            }
+
+            .flowview-section-content {
+                padding: clamp(10px, 1.2vw, 16px);
+            }
+        }
+    }
+
+    .edit-flow-container {
+        position: static;
+        margin: clamp(8px, 1vw, 16px) auto;
+        text-align: center;
+    }
+
+    .edit-flow {
+        display: inline-flex;
+    }
+}
+
+@media (max-width: 480px) {
+    .flowview {
+        .flowview-section {
+            .flowview-section-header {
+                padding: clamp(6px, 0.8vw, 10px);
+                font-size: clamp(11px, 1.2vw, 13px);
+
+                .fa {
+                    font-size: clamp(11px, 1.2vw, 13px);
+                }
+            }
+
+            .flowview-section-content {
+                padding: clamp(8px, 1vw, 12px);
+            }
+        }
+    }
+
+    .flowview-image img {
+        max-height: clamp(150px, 25vh, 300px);
+    }
+}

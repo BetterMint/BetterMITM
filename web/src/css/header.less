@@ -1,0 +1,341 @@
+@import (reference) "../../node_modules/bootstrap/less/variables.less";
+@import (reference) "../../node_modules/bootstrap/less/mixins/grid.less";
+@import (reference) "../../node_modules/bootstrap/less/mixins/labels.less";
+@import (reference) "../../node_modules/bootstrap/less/labels.less";
+
+@menu-height: clamp(70px, 8vh, 95px);
+@menu-height-mobile: clamp(60px, 6vh, 80px);
+
+header {
+    padding-top: clamp(4px, 0.5vh, 8px);
+    background-color: var(--bg-secondary);
+    border-bottom: solid var(--border-color) 1px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 100;
+
+    // Set CSS custom properties for layout calculations
+    --header-height: @menu-height;
+    --header-height-mobile: @menu-height-mobile;
+
+    > div:not(:empty) {
+        display: block;
+        margin: 0;
+        padding: clamp(4px, 1vh, 8px) clamp(8px, 2vw, 16px);
+        border-bottom: solid var(--border-color) 1px;
+        height: @menu-height;
+        overflow: visible; // search help context laps over.
+        background-color: var(--bg-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: clamp(8px, 1vw, 16px);
+    }
+
+    // Mobile responsive
+    @media (max-width: 768px) {
+        > div:not(:empty) {
+            height: @menu-height-mobile;
+            padding: clamp(4px, 0.8vh, 6px) clamp(6px, 1.2vw, 12px);
+            flex-wrap: wrap;
+        }
+    }
+
+    @media (max-width: 480px) {
+        > div:not(:empty) {
+            height: auto;
+            min-height: @menu-height-mobile;
+            padding: clamp(3px, 0.6vh, 5px) clamp(4px, 0.8vw, 8px);
+        }
+    }
+}
+
+@menu-legend-height: clamp(14px, 1.5vh, 16px);
+@menu-group-hmargin: 3px;
+.menu-group {
+    margin: 0 @menu-group-hmargin 0 calc(@menu-group-hmargin + 1px);
+    display: inline-block;
+    height: @menu-height;
+    vertical-align: top;
+    flex-shrink: 0;
+
+    @media (max-width: 768px) {
+        height: @menu-height-mobile;
+        margin: 0 clamp(1px, 0.2vw, 2px);
+    }
+
+    @media (max-width: 480px) {
+        height: auto;
+        min-height: @menu-height-mobile;
+        display: flex;
+        flex-direction: column;
+        margin: 0;
+    }
+}
+
+.menu-content {
+    height: calc(@menu-height - @menu-legend-height);
+    display: flex;
+    align-items: center;
+    gap: clamp(1px, 0.2vw, 4px);
+    flex-wrap: wrap;
+    padding: 0;
+    margin: 0;
+
+    > a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    > .btn,
+    > a > .btn {
+        height: calc(@menu-height - @menu-legend-height);
+        text-align: center;
+        margin: 0;
+        padding: clamp(6px, 0.8vh, 10px) clamp(4px, 0.5vw, 8px);
+        border: none;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+        background-color: var(--bg-tertiary);
+        color: var(--text-primary);
+        font-size: clamp(11px, 1.2vw, 13px);
+        white-space: nowrap;
+        min-width: 0;
+        flex-shrink: 0;
+
+        &:hover {
+            background-color: var(--accent-primary);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        i {
+            font-size: clamp(14px, 1.8vw, 18px);
+            display: block;
+            margin: 0 auto clamp(1px, 0.2vh, 3px);
+        }
+
+        span {
+            display: block;
+            font-size: clamp(9px, 1vw, 11px);
+            line-height: 1;
+            margin-top: clamp(1px, 0.15vh, 2px);
+        }
+    }
+
+    > .btn.btn-sm {
+        height: clamp(20px, 2.5vh, 28px);
+        padding: clamp(2px, 0.3vh, 4px) clamp(3px, 0.4vw, 6px);
+        min-width: clamp(28px, 3vw, 36px);
+        font-size: clamp(10px, 1.2vw, 12px);
+
+        i {
+            display: inline-block;
+            font-size: clamp(12px, 1.4vw, 14px);
+            margin: 0;
+        }
+    }
+
+    @media (max-width: 768px) {
+        height: calc(@menu-height-mobile - @menu-legend-height);
+        gap: clamp(1px, 0.2vw, 3px);
+
+        > .btn,
+        > a > .btn {
+            height: clamp(32px, 4vh, 40px);
+            padding: clamp(4px, 0.6vh, 6px) clamp(3px, 0.4vw, 6px);
+            font-size: clamp(10px, 1.1vw, 12px);
+
+            i {
+                font-size: clamp(13px, 1.6vw, 16px);
+                margin-bottom: clamp(1px, 0.2vh, 2px);
+            }
+
+            span {
+                font-size: clamp(8px, 0.9vw, 10px);
+            }
+        }
+
+        > .btn.btn-sm {
+            height: clamp(18px, 2.2vh, 24px);
+            padding: clamp(1px, 0.2vh, 3px) clamp(2px, 0.3vw, 4px);
+            min-width: clamp(24px, 2.5vw, 32px);
+        }
+    }
+
+    @media (max-width: 480px) {
+        height: auto;
+        min-height: calc(@menu-height-mobile - @menu-legend-height);
+        justify-content: center;
+        gap: clamp(2px, 0.4vw, 4px);
+
+        > .btn,
+        > a > .btn {
+            height: clamp(28px, 3.5vh, 36px);
+            padding: clamp(3px, 0.5vh, 5px) clamp(4px, 0.6vw, 8px);
+            font-size: clamp(9px, 1vw, 11px);
+
+            i {
+                font-size: clamp(12px, 1.5vw, 15px);
+                margin-bottom: 0;
+            }
+
+            span {
+                display: none; // Hide text labels on very small screens
+            }
+        }
+
+        > .btn.btn-sm {
+            height: clamp(16px, 2vh, 22px);
+            padding: clamp(1px, 0.2vh, 2px) clamp(2px, 0.3vw, 3px);
+            min-width: clamp(20px, 2vw, 28px);
+        }
+    }
+}
+
+.menu-entry {
+    text-align: left;
+    height: calc((@menu-height - @menu-legend-height) / 3);
+    line-height: 1;
+    padding: 0.5rem 1rem;
+
+    label {
+        font-size: 1.2rem;
+        font-weight: normal;
+        margin: 0;
+    }
+    input[type="checkbox"] {
+        margin: 0 2px;
+        vertical-align: middle;
+    }
+}
+
+.menu-legend {
+    color: var(--text-secondary);
+    height: @menu-legend-height;
+    text-align: center;
+    font-size: clamp(10px, 1.2vw, 12px);
+    padding: 0 clamp(3px, 0.5vw, 5px);
+    font-weight: 500;
+}
+
+.menu-group + .menu-group:before {
+    @space: clamp(8px, 1vh, 10px);
+    margin-left: calc(-1 * (@menu-group-hmargin + 1px));
+    content: " ";
+    border-left: solid 1px var(--border-color);
+    margin-top: @space;
+    height: calc(@menu-height - @space * 2);
+    position: absolute;
+}
+
+@menu-main-gutter-width: clamp(3px, 0.5vw, 5px);
+.main-menu {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+
+    .menu-group {
+        flex: 1;
+        max-width: 50%;
+    }
+
+    .btn-sm {
+        margin-top: clamp(3px, 0.5vh, 6px);
+    }
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+        gap: 4px;
+
+        .menu-group {
+            width: 100%;
+            max-width: none;
+        }
+
+        .btn-sm {
+            margin-top: 2px;
+        }
+    }
+}
+
+.filter-input {
+    margin: 4px 0;
+}
+
+.filter-input .popover {
+    top: 27px;
+    left: 43px;
+    display: block;
+    max-width: none;
+    opacity: 0.9;
+
+    @media (max-width: @screen-xs-max) {
+        top: 16px;
+        left: 29px;
+        right: 2px;
+    }
+
+    .popover-content {
+        max-height: 500px;
+        overflow-y: auto;
+
+        tr {
+            cursor: pointer;
+            &:hover {
+                background-color: hsla(209, 52%, 84%, 0.5) !important;
+            }
+        }
+    }
+}
+
+.connection-indicator {
+    display: inline-flex;
+    align-items: center;
+    padding: clamp(4px, 0.5vh, 6px) clamp(8px, 1vw, 12px);
+    margin: clamp(2px, 0.3vh, 4px) clamp(4px, 0.5vw, 8px);
+    border-radius: 4px;
+    font-size: clamp(10px, 1.2vw, 12px);
+    font-weight: 500;
+    opacity: 1;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    float: right;
+
+    &.init,
+    &.fetching {
+        background-color: var(--accent-primary);
+        color: white;
+    }
+    &.established {
+        background-color: var(--accent-secondary);
+        color: white;
+        opacity: 0.7;
+    }
+    &.error {
+        background-color: var(--accent-danger);
+        color: white;
+        opacity: 1;
+        animation: pulse 2s infinite;
+    }
+    &.offline {
+        background-color: var(--accent-warning);
+        color: var(--text-primary);
+        opacity: 1;
+    }
+
+    @media (max-width: 768px) {
+        float: none;
+        display: block;
+        text-align: center;
+        margin: 4px auto;
+        max-width: 200px;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}

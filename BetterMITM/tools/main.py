@@ -1,0 +1,213 @@
+from __future__ import annotations
+
+import argparse
+import asyncio
+import logging
+import os
+import signal
+import sys
+from collections.abc import Callable
+from collections.abc import Sequence
+from typing import Any
+from typing import TypeVar
+
+from BetterMITM import exceptions
+from BetterMITM import master
+from BetterMITM import options
+from BetterMITM import optmanager
+from BetterMITM.tools import cmdline
+from BetterMITM.utils import arg_check
+from BetterMITM.utils import debug
+
+
+def process_options(parser, opts, args):
+    if args.version:
+        print(debug.dump_system_info())
+        sys.exit(0)
+    if args.quiet or args.options or args.commands:
+
+
+        args.termlog_verbosity = "error"
+        args.flow_detail = 0
+    if args.verbose:
+        args.termlog_verbosity = "debug"
+        args.flow_detail = 2
+
+    adict = {
+        key: val for key, val in vars(args).items() if key in opts and val is not None
+    }
+    opts.update(**adict)
+
+
+T = TypeVar("T", bound=master.Master)
+
+
+def run(
+    master_cls: type[T],
+    make_parser: Callable[[options.Options], argparse.ArgumentParser],
+    arguments: Sequence[str] | None,
+    extra: Callable[[Any], dict] | None = None,
+) -> T:
+    """
+    extra: Extra argument processing callable which returns a dict of
+    options.
+    """
+
+    async def main() -> T:
+        logging.getLogger().setLevel(logging.DEBUG)
+        logging.getLogger("tornado").setLevel(logging.WARNING)
+        logging.getLogger("asyncio").setLevel(logging.WARNING)
+        logging.getLogger("hpack").setLevel(logging.WARNING)
+        logging.getLogger("urwid").setLevel(logging.INFO)
+        logging.getLogger("quic").setLevel(
+            logging.WARNING
+        )
+        debug.register_info_dumpers()
+
+        opts = options.Options()
+        master = master_cls(opts)
+
+        parser = make_parser(opts)
+
+
+        if "-R" in sys.argv and sys.argv[sys.argv.index("-R") + 1].startswith("http"):
+            print(
+                "To use mitmproxy in reverse mode please use --mode reverse:SPEC instead"
+            )
+
+        try:
+
+
+            if arguments is None:
+
+
+                parse_args = sys.argv[1:]
+            else:
+                parse_args = arguments
+
+            if hasattr(parser, '_get_parser'):
+
+                pass
+            args = parser.parse_args(parse_args)
+        except SystemExit:
+            arg_check.check()
+            sys.exit(1)
+
+        try:
+            opts.set(*args.setoptions, defer=True)
+            optmanager.load_paths(
+                opts,
+                os.path.join(opts.confdir, "config.yaml"),
+                os.path.join(opts.confdir, "config.yml"),
+            )
+            process_options(parser, opts, args)
+
+            if args.options:
+                optmanager.dump_defaults(opts, sys.stdout)
+                sys.exit(0)
+            if args.commands:
+                master.commands.dump()
+                sys.exit(0)
+            if extra:
+                if args.filter_args:
+                    logging.info(
+                        f'Only processing flows that match "{" & ".join(args.filter_args)}"'
+                    )
+                opts.update(**extra(args))
+
+        except exceptions.OptionsError as e:
+            print(f"{sys.argv[0]}: {e}", file=sys.stderr)
+            sys.exit(1)
+
+        loop = asyncio.get_running_loop()
+
+        def _sigint(*_):
+            loop.call_soon_threadsafe(
+                getattr(master, "prompt_for_exit", master.shutdown)
+            )
+
+        def _sigterm(*_):
+            loop.call_soon_threadsafe(master.shutdown)
+
+        try:
+
+
+            loop.add_signal_handler(signal.SIGINT, _sigint)
+            loop.add_signal_handler(signal.SIGTERM, _sigterm)
+        except NotImplementedError:
+
+            signal.signal(signal.SIGINT, _sigint)
+            signal.signal(signal.SIGTERM, _sigterm)
+
+
+
+        if hasattr(signal, "SIGPIPE"):
+            signal.signal(signal.SIGPIPE, signal.SIG_IGN)
+
+        await master.run()
+        return master
+
+    return asyncio.run(main())
+
+
+def mitmproxy(args=None) -> int | None:
+    from BetterMITM.tools import console
+
+    run(console.master.ConsoleMaster, cmdline.mitmproxy, args)
+    return None
+
+
+def mitmdump(args=None) -> int | None:
+    from BetterMITM.tools import dump
+
+    def extra(args):
+        if args.filter_args:
+            v = " ".join(args.filter_args)
+            return dict(
+                save_stream_filter=v,
+                readfile_filter=v,
+                dumper_filter=v,
+            )
+        return {}
+
+    run(dump.DumpMaster, cmdline.mitmdump, args, extra)
+    return None
+
+
+def mitmweb(args=None) -> int | None:
+    from BetterMITM.tools import web
+
+    run(web.master.WebMaster, cmdline.mitmweb, args)
+    return None
+
+
+if __name__ == "__main__":
+    import sys
+    if len(sys.argv) > 1:
+        command = sys.argv[1]
+
+        remaining_args = sys.argv[2:] if len(sys.argv) > 2 else []
+
+
+
+
+        original_argv = sys.argv[:]
+        sys.argv = [command] + remaining_args
+        try:
+            if command == "mitmweb":
+                mitmweb(None)
+            elif command == "mitmproxy":
+                mitmproxy(None)
+            elif command == "mitmdump":
+                mitmdump(None)
+            else:
+                print(f"Unknown command: {command}", file=sys.stderr)
+                print("Available commands: mitmweb, mitmproxy, mitmdump", file=sys.stderr)
+                sys.exit(1)
+        finally:
+
+            sys.argv = original_argv
+    else:
+        print("Usage: python -m BetterMITM.tools.main <command> [args...]", file=sys.stderr)
+        print("Available commands: mitmweb, mitmproxy, mitmdump", file=sys.stderr)
+        sys.exit(1)
