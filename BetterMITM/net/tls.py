@@ -73,8 +73,10 @@ DEFAULT_OPTIONS = SSL.OP_CIPHER_SERVER_PREFERENCE | SSL.OP_NO_COMPRESSION
 
 @cache
 def is_supported_version(version: Version):
+    # Never enable or test deprecated/insecure SSL/TLS protocol versions
+    if version in INSECURE_TLS_MIN_VERSIONS:
+        return False
     client_ctx = SSL.Context(SSL.TLS_CLIENT_METHOD)
-
 
     client_ctx.set_cipher_list(b"@SECLEVEL=0:ALL")
     client_ctx.set_min_proto_version(version.value)
