@@ -1,2 +1,2 @@
-graft mitmproxy
+graft BetterMITM
 recursive-exclude * *.pyc *.pyo *.swo *.swp *.map
