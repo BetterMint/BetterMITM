@@ -1,6 +1,6 @@
 import asyncio
 import json
-
+import html
 import flask
 from flask import request
 
@@ -27,7 +27,7 @@ def request_check():
 
 @tapp.route("/requestbody", methods=["POST"])
 def request_body():
-    return json.dumps({"body": request.data.decode()})
+    return json.dumps({"body": html.escape(request.data.decode())})
 
 
 @tapp.route("/error")
