@@ -72,10 +72,11 @@ class HtpasswdFile:
         pwhash = pwhash.split(":", 1)[0]
 
         if pwhash.startswith("{SHA}"):
-
-
-            digest = hashlib.sha1(password.encode("utf-8")).digest()
-            expected = base64.b64encode(digest).decode("ascii")
-            return pwhash[5:] == expected
+            # SHA-1 is insecure for password hashing. Reject authentication.
+            raise ValueError(
+                "Refusing to authenticate against SHA-1 htpasswd entry for user '{}'. "
+                "SHA-1 is insecure and should not be used for password storage. "
+                "Please upgrade your htpasswd file to use bcrypt or another secure hash.".format(username)
+            )
         else:
             return bcrypt.checkpw(password.encode("utf-8"), pwhash.encode("utf-8"))
