@@ -1,6 +1,6 @@
 import json
 from unittest import mock
-
+from html.parser import HTMLParser
 from examples.contrib.webscanner_helper.urlinjection import HTMLInjection
 from examples.contrib.webscanner_helper.urlinjection import InjectionGenerator
 from examples.contrib.webscanner_helper.urlinjection import logger
@@ -38,7 +38,20 @@ class TestHTMLInjection:
         f = tflow.tflow(resp=tutils.tresp())
         assert "example.com" not in str(f.response.content)
         html_injection.inject(index, f)
-        assert "example.com" in str(f.response.content)
+
+        class ExampleComLinkParser(HTMLParser):
+            def __init__(self):
+                super().__init__()
+                self.example_com_links = []
+            def handle_starttag(self, tag, attrs):
+                for attr in attrs:
+                    if attr[0] in ('href', 'src'):
+                        if attr[1].startswith("http") and "://example.com" in attr[1]:
+                            self.example_com_links.append(attr[1])
+
+        parser = ExampleComLinkParser()
+        parser.feed(f.response.text if hasattr(f.response, "text") else str(f.response.content))
+        assert any(url.startswith("http://example.com") or url.startswith("https://example.com") for url in parser.example_com_links)
 
     def test_inject_insert_body(self):
         html_injection = HTMLInjection(insert=True)

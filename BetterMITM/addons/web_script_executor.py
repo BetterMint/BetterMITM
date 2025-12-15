@@ -161,7 +161,7 @@ class WebScriptExecutor:
                 return {"error": f"Unsupported language: {script['language']}"}
         except Exception as e:
             logger.error(f"Error executing script {script_id}: {e}", exc_info=True)
-            return {"error": str(e)}
+            return {"error": "Internal server error"}
 
     def _execute_javascript(self, script: Dict[str, Any], flow_obj: flow.Flow, trigger: str) -> Dict[str, Any]:
         """Execute JavaScript script with flow API."""
@@ -285,7 +285,8 @@ class WebScriptExecutor:
         except subprocess.TimeoutExpired:
             return {"error": "Script execution timeout"}
         except Exception as e:
-            return {"error": str(e)}
+            logger.error(f"JavaScript script execution error: {e}", exc_info=True)
+            return {"error": "Script execution failed"}
 
     def _execute_python(self, script: Dict[str, Any], flow_obj: flow.Flow, trigger: str) -> Dict[str, Any]:
         """Execute Python script with flow API that can actually modify flows."""
@@ -322,9 +323,10 @@ class WebScriptExecutor:
                 "modifications": modifications,
             }
         except Exception as e:
+            logger.error(f"Python script execution error: {e}", exc_info=True)
             return {
                 "success": False,
-                "error": str(e),
+                "error": "Script execution failed",
             }
 
     def _flow_request_to_json(self, flow_obj: flow.Flow) -> str:
