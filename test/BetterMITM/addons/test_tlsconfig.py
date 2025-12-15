@@ -25,7 +25,8 @@ from test.BetterMITM.test_flow import tflow
 
 
 def test_alpn_select_callback():
-    ctx = SSL.Context(SSL.SSLv23_METHOD)
+    ctx = SSL.Context(SSL.TLS_METHOD)
+    ctx.set_options(SSL.OP_NO_SSLv2 | SSL.OP_NO_SSLv3 | SSL.OP_NO_TLSv1 | SSL.OP_NO_TLSv1_1)
     conn = SSL.Connection(ctx)
 
 
