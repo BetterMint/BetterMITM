@@ -11,6 +11,9 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/BetterMint/BetterMITM/releases">
+    <img src="https://img.shields.io/github/downloads/BetterMint/BetterMITM/total?style=flat&label=Project%20Downloads" alt="Project Downloads" />
+  </a>
   <a href="https://github.com/BetterMint/BetterMITM">
     <img src="https://img.shields.io/github/stars/BetterMint/BetterMITM?style=flat&label=Stars" alt="Repo Stars" />
   </a>
