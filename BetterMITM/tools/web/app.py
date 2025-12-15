@@ -1199,9 +1199,11 @@ class FlowStateControl(RequestHandler):
         if not addon:
             raise APIError(404, "Advanced interceptor addon not found")
 
+        # Only allow printable/safe string characters in flow_id
+        sanitized_flow_id = re.sub(r'[^a-zA-Z0-9_\-]', '', str(flow_id))
         state = addon.get_flow_state(flow_id)
         self.write({
-            "flow_id": flow_id,
+            "flow_id": sanitized_flow_id,
             "state": state,
             "intercepted": self.flow.intercepted,
             "killable": self.flow.killable,
