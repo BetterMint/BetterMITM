@@ -5,6 +5,7 @@ import functools
 import hashlib
 import json
 import logging
+import traceback
 import os.path
 import re
 import secrets
@@ -1533,7 +1534,8 @@ class ScriptTest(RequestHandler):
         except subprocess.TimeoutExpired:
             self.write({"error": "Script execution timeout"})
         except Exception as e:
-            self.write({"error": str(e)})
+            logger.error("Exception occurred in ScriptTest.post: %s", traceback.format_exc())
+            self.write({"error": "An internal error occurred"})
 
 
 class Transformers(RequestHandler):
