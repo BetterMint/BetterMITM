@@ -92,7 +92,7 @@ function onInput() {
             let url = `${root}${doc.url}`;
             html += `
                     <div class="search-result">
-                    [${doc.section}] <a href="${url}">${doc.title}</a>
+                    [${escapeHTML(doc.section)}] <a href="${escapeHTML(url)}">${escapeHTML(doc.title)}</a>
                     </div>
                 `;
 
