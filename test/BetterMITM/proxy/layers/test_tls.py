@@ -197,9 +197,9 @@ def reply_tls_start_client(alpn: bytes | None = None, *args, **kwargs) -> tutils
     def make_client_conn(tls_start: TlsData) -> None:
 
 
-        ssl_context = SSL.Context(SSL.SSLv23_METHOD)
+        ssl_context = SSL.Context(SSL.TLS_METHOD)
         ssl_context.set_options(
-            SSL.OP_NO_SSLv3 | SSL.OP_NO_TLSv1 | SSL.OP_NO_TLSv1_1 | SSL.OP_NO_TLSv1_2
+            SSL.OP_NO_SSLv2 | SSL.OP_NO_SSLv3 | SSL.OP_NO_TLSv1 | SSL.OP_NO_TLSv1_1
         )
         ssl_context.use_privatekey_file(
             tlsdata.path("../../net/data/verificationcerts/trusted-leaf.key")
