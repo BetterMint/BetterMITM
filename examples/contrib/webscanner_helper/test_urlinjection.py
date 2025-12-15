@@ -124,4 +124,4 @@ class TestUrlInjectionAddon:
         assert fltr(f)
         assert "http://example.com:80" not in str(f.response.content)
         url_injection.response(f)
-        assert "http://example.com:80" in str(f.response.content)
+        assert "<loc>http://example.com:80/</loc>" in str(f.response.content)
