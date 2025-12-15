@@ -844,7 +844,8 @@ class ExecuteCommand(RequestHandler):
         try:
             result = self.master.commands.call_strings(cmd, args)
         except Exception as e:
-            self.write({"error": str(e)})
+            logger.exception("Failed to execute command '%s' with args: %r", cmd, args)
+            self.write({"error": "An internal error occurred."})
         else:
             self.write(
                 {
