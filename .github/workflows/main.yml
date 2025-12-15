@@ -96,7 +96,7 @@ jobs:
       - if: runner.os == 'macOS' && github.repository == 'mitmproxy/mitmproxy'
             && (startsWith(github.ref, 'refs/heads/') || startsWith(github.ref, 'refs/tags/'))
         id: keychain
-        uses: apple-actions/import-codesign-certs@95e84a1a18f2bdbc5c6ab9b7f4429372e4b13a8b
+        uses: apple-actions/import-codesign-certs@b610f78488812c1e56b20e6df63ec42d833f2d14
         with:
           keychain: ${{ runner.temp }}/temp
           p12-file-base64: ${{ secrets.APPLE_CERTIFICATE }}
@@ -118,7 +118,7 @@ jobs:
       - if: runner.os == 'Windows'
         run: python -u release/build.py standalone-binaries
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: binaries.${{ matrix.platform }}
           path: release/dist
@@ -144,7 +144,7 @@ jobs:
         env:
           CI_BUILD_KEY: ${{ secrets.CI_BUILD_KEY }}
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: binaries.windows-installer
           path: release/dist
@@ -157,7 +157,7 @@ jobs:
         with:
           node-version-file: .github/node-version.txt
       - name: Cache Node.js modules
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           # npm cache files are stored in `~/.npm` on Linux/macOS
           path: ~/.npm
@@ -179,7 +179,7 @@ jobs:
     needs: build-wheel
     steps:
       - uses: mhils/workflows/checkout@af886cbabab992a8e7db75c6af3516af2b1f5a1c
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           name: binaries.wheel
           path: release/docker
@@ -200,7 +200,7 @@ jobs:
           sudo dpkg -i hugo*.deb
 
       - run: ./docs/build.py
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: docs
           path: docs/public
@@ -209,7 +209,7 @@ jobs:
         env:
           DOCS_ARCHIVE: ${{ github.ref_name }}
       - if: startsWith(github.ref, 'refs/tags/')
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: docs-archive
           path: docs/public
@@ -246,7 +246,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: mhils/workflows/checkout@af886cbabab992a8e7db75c6af3516af2b1f5a1c
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           name: binaries.wheel
           path: release/docker
@@ -329,16 +329,16 @@ jobs:
         with:
           args: --only-group deploy
 
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           name: docs
           path: docs/public
       - if: startsWith(github.ref, 'refs/tags/')
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: docs-archive
           path: docs/archive
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           pattern: binaries.*
           merge-multiple: true
