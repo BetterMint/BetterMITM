@@ -20,7 +20,7 @@
   <a href="https://github.com/BetterMint/BetterMITM/issues">
     <img src="https://img.shields.io/github/issues/BetterMint/BetterMITM?style=flat&label=Issues" alt="Issues" />
   </a>
-  <a href="https://discord.gg/bettermint-development-1098267851732815932">
+  <a href="https://discord.gg/basic">
     <img src="https://img.shields.io/discord/1098267851732815932?style=flat&label=Discord&color=5865F2" alt="Discord" />
   </a>
 </p>
@@ -480,7 +480,7 @@ Areas where we'd love help:
 ## 💬 Community & Support
 
 - **Discord**: Join our Discord server for support, discussions, and updates
-  - 👉 [Join Discord](https://discord.gg/bettermint-development-1098267851732815932)
+  - 👉 [Join Discord](https://discord.gg/basic)
 - **GitHub Issues**: Report bugs or request features
   - 📋 [GitHub Issues](https://github.com/BetterMint/BetterMITM/issues)
 - **Documentation**: Check the **Help** tab in BetterMITM for detailed guides
@@ -570,7 +570,7 @@ See [CHANGELOG.md](CHANGELOG.md) for a detailed list of changes and updates.
 </p>
 
 <p align="center">
-  <a href="https://discord.gg/bettermint-development-1098267851732815932">Discord</a> •
+  <a href="https://discord.gg/basic">Discord</a> •
   <a href="https://github.com/BetterMint/BetterMITM">GitHub</a> •
   <a href="docs.md">Documentation</a>
 </p>
