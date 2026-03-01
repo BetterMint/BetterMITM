@@ -83,8 +83,8 @@ dev = [
     {include-group = "ruff"},
 ]
 tox = [
-    "tox==4.32.0",
-    "tox-uv==1.29.0",
+    "tox==4.46.3",
+    "tox-uv==1.33.0",
 ]
 ruff = [
     "ruff==0.14.9",
